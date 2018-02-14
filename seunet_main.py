@@ -44,8 +44,12 @@ def train(path_to_image, path_to_target, model_path, batch_size, nb_epoch, nb_gp
     opt_generator = Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
     generator_model = seunet(img_dim0, img_dim)
-
-    unet = multi_gpu_model(generator_model, gpus=nb_gpus)
+    
+    print(nb_gpus)
+    if int(nb_gpus) > 1:
+        unet = multi_gpu_model(generator_model, gpus=nb_gpus)
+    else:
+        unet = generator_model
 
     unet.compile(loss=mean_dice_coef_loss, optimizer=opt_generator)
 
@@ -59,7 +63,7 @@ def train(path_to_image, path_to_target, model_path, batch_size, nb_epoch, nb_gp
         print('Epoch %s/%s done' % (e_shift, nb_epoch))
         print("")
 
-        model_path = pix2pix_path + '/models'
+#        model_path = pix2pix_path + '/models'
 
         if e % 10 == 9:
 
@@ -74,13 +78,13 @@ if __name__ == "__main__":
 
     import sys
 
-    args = sys.argv
+    argvs = sys.argv
 
-    path_to_image = args[1]
-    path_to_target = args[2]
-    model_path = [3]
-    batch_size = [4]
-    nb_epoch = [5]
-    nb_gpus = [6]
+    path_to_image = argvs[1]
+    path_to_target = argvs[2]
+    model_path = argvs[3]
+    batch_size = int(argvs[4])
+    nb_epoch = int(argvs[5])
+    nb_gpus = int(argvs[6])
 
     train(path_to_image, path_to_target, model_path, batch_size, nb_epoch, nb_gpus)

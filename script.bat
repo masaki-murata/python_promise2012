@@ -1,0 +1,1 @@
+python seunet_main.py ../IntermediateData/data_for_train/data.npy ../IntermediateData/data_for_train/label.npy ../IntermediateData/model 1 32 1

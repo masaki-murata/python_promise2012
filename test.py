@@ -7,7 +7,7 @@ Created on Sun Feb 11 19:00:30 2018
 """
 
 import readmhd
-import os, re, csv
+import os, re, csv, sys
 import attention_senet_based
 from skimage.transform import resize
 import numpy as np
@@ -63,4 +63,54 @@ def resize_all(ref_size=np.array([3.6, 0.625, 0.625])):
                 np.save("../IntermediateData/rescaled/"+file[:-4]+".npy", np.int8(volume_rescaled))
                 print(file, volume_rescaled.shape)
     
-resize_all(ref_size=voxel_size)
+def crop_3d(crop_shape=np.array([32,256,256]),
+            ):
+    path_to_mri = "../IntermediateData/rescaled/Case%02d.npy"
+    path_to_segmentation = "../IntermediateData/rescaled/Case%02d_segmentation.npy"
+    path_to_save_dir = "../IntermediateData/cropped/"
+    path_to_mri_cropped = path_to_save_dir + "Case%02d.npy"
+    path_to_segmentation_cropped = path_to_save_dir + "Case%02d_segmentation.npy"
+    
+    if not os.path.isdir(path_to_save_dir):
+        os.mkdir(path_to_save_dir)
+    for case in range(50):
+        mri = np.load(path_to_mri % case)
+        segmentation = np.load(path_to_segmentation % case)
+        if mri.shape != segmentation.shape:
+            print("shape does not match!")
+            sys.exit()
+        mri_shape = np.array(mri.shape)
+        min_pos = (mri_shape-crop_shape)//2
+        max_pos = min_pos + crop_shape
+        mri_cropped = mri[min_pos[0]:max_pos[0], min_pos[1]:max_pos[1], min_pos[2]:max_pos[2]]
+        segmentation_cropped = segmentation[min_pos[0]:max_pos[0], min_pos[1]:max_pos[1], min_pos[2]:max_pos[2]]
+        np.save(path_to_mri_cropped % case, mri_cropped)
+        np.save(path_to_segmentation_cropped % case, segmentation_cropped)
+
+
+def make_data_label(crop_shape=np.array([32,256,256])):
+    path_to_mri = "../IntermediateData/cropped/Case%02d.npy"
+    path_to_segmentation = "../IntermediateData/cropped/Case%02d_segmentation.npy"
+    path_to_image = "../IntermediateData/data_for_train/data.npy"
+    path_to_target = "../IntermediateData/data_for_train/label.npy"
+    path_to_data_dir = "../IntermediateData/data_for_train/"
+    if not os.path.isdir(path_to_data_dir):
+        os.mkdir(path_to_data_dir)
+    
+    data = np.zeros((50,)+tuple(crop_shape)+(1,), dtype=np.float)
+    label = np.zeros((50,)+tuple(crop_shape)+(1,), dtype=np.int8)
+    for case in range(50):
+        mri = np.load(path_to_mri % case)
+        segmentation = np.load(path_to_segmentation % case)
+        data[case] = mri.reshape(mri.shape+(1,))
+        label[case] = segmentation.reshape(segmentation.shape+(1,))
+    np.save(path_to_image, data)
+    np.save(path_to_target, label)
+    
+
+#make_data_label()
+segmentation = np.load("../IntermediateData/cropped/Case%02d_segmentation.npy" % 0)
+print(np.amax(segmentation))
+import matplotlib.pyplot as plt
+plt.hist(segmentation.flatten(),bins=100)
+    
