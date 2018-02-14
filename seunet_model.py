@@ -2,10 +2,10 @@ from keras.utils.training_utils import multi_gpu_model
 
 import tensorflow as tf
 from keras import backend as K
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-sess = tf.Session(config=config)
-K.set_session(sess)
+#config = tf.ConfigProto()
+#config.gpu_options.allow_growth = True
+#sess = tf.Session(config=config)
+#K.set_session(sess)
 
 from keras.models import Model
 from keras.layers.core import Flatten, Dense, Dropout, Activation, Lambda

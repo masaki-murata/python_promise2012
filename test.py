@@ -11,6 +11,8 @@ import os, re, csv, sys
 import attention_senet_based
 from skimage.transform import resize
 import numpy as np
+from seunet_model import seunet
+import keras
 
 #model = attention_senet_based.seunet(img_dims=(30,30,30,1))
 #model.summary()
@@ -108,9 +110,37 @@ def make_data_label(crop_shape=np.array([32,256,256])):
     np.save(path_to_target, label)
     
 
-#make_data_label()
-segmentation = np.load("../IntermediateData/cropped/Case%02d_segmentation.npy" % 0)
-print(np.amax(segmentation))
-import matplotlib.pyplot as plt
-plt.hist(segmentation.flatten(),bins=100)
+def predict(path_to_image, path_to_target, model_path, batch_size, path_to_output):
+    # X_sketchが元の病理画像。[0,1]に規格化されたnp array
+    X_sketch_train = np.load(path_to_image)
+    # X_fullがsegmentationされた画像。[0,1]に規格化された4channel np array
+    X_full_train = np.load(path_to_target)
+
+
+    img_dim = X_full_train.shape[-4:]
+    img_dim0 = X_sketch_train.shape[-4:]
+    train_size = X_full_train.shape[0]
+
+    if img_dim[:-1] != img_dim0[:-1]:
+        print("Error: output shape must be the same as that of input")
+
+#    opt_generator = Adam(lr=1e-3, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+
+    model = seunet(img_dim0, img_dim)
     
+    model.load_weights(model_path)
+    
+    Y_train = model.predict(X_sketch_train, batch_size)
+    
+    np.save(path_to_output, Y_train.reshape(Y_train.shape[:-1]))
+
+#resize_all(ref_size=voxel_size)
+#crop_3d()
+#make_data_label()
+
+path_to_image = "../IntermediateData/data_for_train/data.npy"
+path_to_target = "../IntermediateData/data_for_train/label.npy"
+model_path = "../IntermediateData/model/seunet_weights_30.h5"
+batch_size = 1
+path_to_output = "../IntermediateData/output/segmentation_prediction.npy"
+predict(path_to_image, path_to_target, model_path, batch_size, path_to_output)
