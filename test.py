@@ -154,9 +154,9 @@ def make_raw_output(path_to_output, path_to_segmentation_predicted):
     for case in range(50):
         np.save(path_to_segmentation_predicted % case, output[case])
         
-resize_all(ref_size=voxel_size)
-#crop_3d()
-#make_data_label()
+#resize_all(ref_size=voxel_size)
+crop_3d()
+make_data_label()
 
 #path_to_image = "../IntermediateData/data_for_train/data.npy"
 #path_to_target = "../IntermediateData/data_for_train/label.npy"
