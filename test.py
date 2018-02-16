@@ -67,6 +67,7 @@ def resize_all(ref_size=np.array([3.6, 0.625, 0.625])):
                 matrixsize_rescaled[1]=matrixsize_rescaled[2]
                 volume_rescaled = resize(np.float32(volume.vol), matrixsize_rescaled)
 #                volume_rescaled.tofile("../IntermediateData/rescaled/"+file[:-4]+".raw")
+                volume_rescaled[volume_rescaled>0.5] = 1
                 np.save(path_to_rescaled_npy % file[:-4], np.int8(volume_rescaled))
                 np.save(path_to_rescaled_npy % (file[:-4]+"32"), np.float32(volume_rescaled))
                 print(file, volume_rescaled.shape)
