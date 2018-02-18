@@ -116,6 +116,7 @@ def make_data_label(crop_shape=np.array([32,256,256])):
     label = np.zeros((50,)+tuple(crop_shape)+(1,), dtype=np.int8)
     for case in range(50):
         mri = np.load(path_to_mri % case)
+        mri = mri / np.amax(mri)
         segmentation = np.load(path_to_segmentation % case)
         data[case] = mri.reshape(mri.shape+(1,))
         label[case] = segmentation.reshape(segmentation.shape+(1,))
@@ -155,7 +156,7 @@ def make_raw_output(path_to_output, path_to_segmentation_predicted):
         np.save(path_to_segmentation_predicted % case, output[case])
         
 #resize_all(ref_size=voxel_size)
-crop_3d()
+#crop_3d()
 make_data_label()
 
 #path_to_image = "../IntermediateData/data_for_train/data.npy"
